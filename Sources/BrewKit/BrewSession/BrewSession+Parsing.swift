@@ -219,103 +219,89 @@ extension BrewSession {
     static func parseInfo(_ text: String, command: String) throws(BrewSessionError)
         -> BrewPackageInfo
     {
-        struct FormulaInstalledEntry: Decodable {
-            let version: String?
-        }
-
-        struct FormulaInfo: Decodable {
-            let name: String
-            let fullName: String?
-            let desc: String?
-            let homepage: String?
-            let tap: String?
-            let aliases: [String]
-            let oldnames: [String]
-            let versions: Versions?
-            let installed: [FormulaInstalledEntry]?
-            let pinned: Bool?
-            let outdated: Bool?
-
-            struct Versions: Decodable {
-                let stable: String?
-            }
-
-            enum CodingKeys: String, CodingKey {
-                case name
-                case fullName = "full_name"
-                case desc
-                case homepage
-                case tap
-                case aliases
-                case oldnames
-                case versions
-                case installed
-                case pinned
-                case outdated
-            }
-        }
-
-        struct CaskInfo: Decodable {
-            let token: String
-            let fullToken: String?
-            let desc: String?
-            let homepage: String?
-            let tap: String?
-            let version: String?
-            let installed: String?
-            let outdated: Bool?
-            let autoUpdates: Bool?
-
-            enum CodingKeys: String, CodingKey {
-                case token
-                case fullToken = "full_token"
-                case desc
-                case homepage
-                case tap
-                case version
-                case installed
-                case outdated
-                case autoUpdates = "auto_updates"
-            }
-        }
-
-        struct Root: Decodable {
-            let formulae: [FormulaInfo]
-            let casks: [CaskInfo]
-        }
-
         let payload = try extractJSONObjectString(from: text, command: command)
 
-        let root: Root
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        let root: BrewInfoPayload
         do {
-            root = try JSONDecoder().decode(Root.self, from: Data(payload.utf8))
+            root = try decoder.decode(BrewInfoPayload.self, from: Data(payload.utf8))
         } catch {
             throw BrewSessionError.jsonDecodeFailed(command: command, payload: payload)
         }
 
         if let formula = root.formulae.first {
             return BrewPackageInfo(
+                formulaInfo: formula,
+                caskInfo: nil,
                 kind: .formula,
                 name: formula.name,
                 fullName: formula.fullName,
+                names: [],
                 description: formula.desc,
                 homepage: formula.homepage,
                 tap: formula.tap,
                 version: formula.versions?.stable,
                 installedVersions: formula.installed?.compactMap(\.version) ?? [],
-                aliases: formula.aliases,
-                oldNames: formula.oldnames,
+                aliases: formula.aliases ?? [],
+                oldNames: formula.oldnames ?? [],
+                oldTokens: [],
                 pinned: formula.pinned,
+                pinnedVersion: nil,
                 outdated: formula.outdated,
-                autoUpdates: nil
+                autoUpdates: nil,
+                license: formula.license,
+                revision: formula.revision,
+                versionScheme: formula.versionScheme,
+                compatibilityVersion: formula.compatibilityVersion,
+                kegOnly: formula.kegOnly,
+                linkedKeg: formula.linkedKeg,
+                buildDependencies: formula.buildDependencies ?? [],
+                dependencies: formula.dependencies ?? [],
+                testDependencies: formula.testDependencies ?? [],
+                recommendedDependencies: formula.recommendedDependencies ?? [],
+                optionalDependencies: formula.optionalDependencies ?? [],
+                requirements: (formula.requirements ?? []).compactMap {
+                    if case let .string(value) = $0 { return value }
+                    return nil
+                },
+                conflictsWith: formula.conflictsWith ?? [],
+                url: nil,
+                sha256: nil,
+                installedTime: nil,
+                bundleVersion: nil,
+                bundleShortVersion: nil,
+                languages: [],
+                deprecated: formula.deprecated,
+                deprecationDate: formula.deprecationDate,
+                deprecationReason: formula.deprecationReason,
+                deprecationReplacementFormula: formula.deprecationReplacementFormula,
+                deprecationReplacementCask: formula.deprecationReplacementCask,
+                disabled: formula.disabled,
+                disableDate: formula.disableDate,
+                disableReason: formula.disableReason,
+                disableReplacementFormula: formula.disableReplacementFormula,
+                disableReplacementCask: formula.disableReplacementCask,
+                postInstallDefined: formula.postInstallDefined,
+                autobump: formula.autobump,
+                noAutobumpMessage: formula.noAutobumpMessage,
+                skipLivecheck: formula.skipLivecheck,
+                tapGitHead: formula.tapGitHead,
+                rubySourcePath: formula.rubySourcePath,
+                generatedDate: formula.generatedDate,
+                variationKeys: formula.variations?.keys.sorted() ?? []
             )
         }
 
         if let cask = root.casks.first {
             return BrewPackageInfo(
+                formulaInfo: nil,
+                caskInfo: cask,
                 kind: .cask,
                 name: cask.token,
                 fullName: cask.fullToken,
+                names: cask.name ?? [],
                 description: cask.desc,
                 homepage: cask.homepage,
                 tap: cask.tap,
@@ -323,9 +309,48 @@ extension BrewSession {
                 installedVersions: cask.installed.map { [$0] } ?? [],
                 aliases: [],
                 oldNames: [],
-                pinned: nil,
+                oldTokens: cask.oldTokens ?? [],
+                pinned: cask.pinned,
+                pinnedVersion: cask.pinnedVersion,
                 outdated: cask.outdated,
-                autoUpdates: cask.autoUpdates
+                autoUpdates: cask.autoUpdates,
+                license: nil,
+                revision: nil,
+                versionScheme: nil,
+                compatibilityVersion: nil,
+                kegOnly: nil,
+                linkedKeg: nil,
+                buildDependencies: [],
+                dependencies: [],
+                testDependencies: [],
+                recommendedDependencies: [],
+                optionalDependencies: [],
+                requirements: [],
+                conflictsWith: [],
+                url: cask.url,
+                sha256: cask.sha256,
+                installedTime: cask.installedTime,
+                bundleVersion: cask.bundleVersion,
+                bundleShortVersion: cask.bundleShortVersion,
+                languages: cask.languages ?? [],
+                deprecated: cask.deprecated,
+                deprecationDate: cask.deprecationDate,
+                deprecationReason: cask.deprecationReason,
+                deprecationReplacementFormula: cask.deprecationReplacementFormula,
+                deprecationReplacementCask: cask.deprecationReplacementCask,
+                disabled: cask.disabled,
+                disableDate: cask.disableDate,
+                disableReason: cask.disableReason,
+                disableReplacementFormula: cask.disableReplacementFormula,
+                disableReplacementCask: cask.disableReplacementCask,
+                postInstallDefined: nil,
+                autobump: cask.autobump,
+                noAutobumpMessage: cask.noAutobumpMessage,
+                skipLivecheck: cask.skipLivecheck,
+                tapGitHead: cask.tapGitHead,
+                rubySourcePath: cask.rubySourcePath,
+                generatedDate: cask.generatedDate,
+                variationKeys: cask.variations?.keys.sorted() ?? []
             )
         }
 
