@@ -79,7 +79,25 @@ private struct MockCommandRunner: BrewCommandRunning {
               "desc": "Get the battery level",
               "homepage": "https://github.com/lihaoyun6/AirBattery",
               "version": "1.6.2",
-              "installed": "1.6.0"
+              "installed": "1.6.0",
+              "depends_on": {
+                "cask": ["foo-helper"],
+                "macos": {
+                  ">=": ["13"]
+                }
+              },
+              "conflicts_with": {
+                "cask": ["foo"]
+              },
+              "artifacts": [
+                { "app": ["AirBattery.app"] }
+              ],
+              "variations": {
+                "sonoma": {
+                  "url": "https://example.com/airbattery-sonoma.dmg",
+                  "sha256": "abc"
+                }
+              }
             }
           ]
         }
@@ -92,6 +110,69 @@ private struct MockCommandRunner: BrewCommandRunning {
     #expect(summary.version == "1.6.2")
     #expect(summary.fullName == "lihaoyun6/tap/airbattery")
     #expect(summary.installedVersions == ["1.6.0"])
+    #expect(summary.caskInfo?.dependsOn?.cask == ["foo-helper"])
+    #expect(summary.caskInfo?.conflictsWith?.cask == ["foo"])
+    #expect(summary.caskInfo?.variations?.keys.contains("sonoma") == true)
+    #expect(summary.formulaInfo == nil)
+}
+
+@Test func infoParsingReturnsStructuredFormulaDetails() throws {
+    let text = """
+        {
+          "formulae": [
+            {
+              "name": "wget",
+              "full_name": "homebrew/core/wget",
+              "desc": "Internet file retriever",
+              "homepage": "https://www.gnu.org/software/wget/",
+              "license": "GPL-3.0-or-later",
+              "versions": {
+                "stable": "1.25.0",
+                "head": "HEAD",
+                "bottle": true
+              },
+              "urls": {
+                "stable": {
+                  "url": "https://example.com/wget.tar.gz",
+                  "checksum": "deadbeef"
+                }
+              },
+              "bottle": {
+                "stable": {
+                  "rebuild": 1,
+                  "root_url": "https://ghcr.io/v2/homebrew/core",
+                  "files": {
+                    "arm64_sonoma": {
+                      "cellar": "/opt/homebrew/Cellar",
+                      "url": "https://example.com/wget-bottle",
+                      "sha256": "bead"
+                    }
+                  }
+                }
+              },
+              "installed": [
+                { "version": "1.24.5" }
+              ],
+              "variations": {
+                "x86_64_linux": {
+                  "dependencies": ["openssl@3"]
+                }
+              }
+            }
+          ],
+          "casks": []
+        }
+        """
+
+    let summary = try BrewSession.parseInfo(text, command: "brew info --json=v2 wget")
+
+    #expect(summary.kind == .formula)
+    #expect(summary.name == "wget")
+    #expect(summary.version == "1.25.0")
+    #expect(summary.installedVersions == ["1.24.5"])
+    #expect(summary.formulaInfo?.bottle?.stable?.files?["arm64_sonoma"]?.sha256 == "bead")
+    #expect(summary.formulaInfo?.variations?.keys.contains("x86_64_linux") == true)
+    #expect(summary.caskInfo == nil)
 }
 
 @Test func commandArgumentBuilding() async throws {
