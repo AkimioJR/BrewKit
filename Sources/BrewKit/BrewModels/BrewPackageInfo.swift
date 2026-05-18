@@ -3,6 +3,14 @@ import Foundation
 /// Strongly typed package info returned by `BrewSession.info`.
 /// `BrewSession.info` 返回的强类型软件包信息。
 public struct BrewPackageInfo: Codable, Sendable {
+    /// Structured formula details from `brew info --json=v2`.
+    /// 来自 `brew info --json=v2` 的结构化 formula 详情。
+    public let formulaInfo: BrewFormulaInfo?
+
+    /// Structured cask details from `brew info --json=v2`.
+    /// 来自 `brew info --json=v2` 的结构化 cask 详情。
+    public let caskInfo: BrewCaskInfo?
+
     /// Package kind, formula or cask.
     /// 软件包类型，formula 或 cask。
     public let kind: BrewPackageKind
