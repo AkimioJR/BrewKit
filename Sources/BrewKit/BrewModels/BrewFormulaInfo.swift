@@ -113,7 +113,7 @@ public struct BrewFormulaInfo: Codable, Sendable {
 
     /// Dependencies provided by macOS.
     /// 由 macOS 提供的依赖。
-    public let usesFromMacos: [String]?
+    public let usesFromMacos: [BrewJSONValue]?
 
     /// Bounds for macOS-provided dependencies.
     /// macOS 依赖边界约束。
@@ -129,7 +129,7 @@ public struct BrewFormulaInfo: Codable, Sendable {
 
     /// Conflict reason strings.
     /// 冲突原因字符串列表。
-    public let conflictsWithReasons: [String]?
+    public let conflictsWithReasons: [BrewJSONValue]?
 
     /// Files to overwrite when linking.
     /// link 时可覆盖文件列表。
@@ -441,7 +441,7 @@ public struct BrewFormulaDependencySet: Codable, Sendable {
 
     /// Dependencies provided by macOS.
     /// 由 macOS 提供的依赖。
-    public let usesFromMacos: [String]?
+    public let usesFromMacos: [BrewJSONValue]?
 
     /// Bounds for macOS-provided dependencies.
     /// macOS 依赖边界约束。
@@ -473,7 +473,7 @@ public struct BrewFormulaVariation: Codable, Sendable {
 
     /// Dependencies provided by macOS override.
     /// 由 macOS 提供的依赖覆盖项。
-    public let usesFromMacos: [String]?
+    public let usesFromMacos: [BrewJSONValue]?
 
     /// Bounds for macOS-provided dependencies override.
     /// macOS 依赖边界覆盖项。

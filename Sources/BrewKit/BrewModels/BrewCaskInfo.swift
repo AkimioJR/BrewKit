@@ -133,7 +133,7 @@ public struct BrewCaskInfo: Codable, Sendable {
 
     /// Rename history.
     /// 重命名历史。
-    public let rename: [String]?
+    public let rename: [BrewJSONValue]?
 
     /// Languages.
     /// 语言列表。
@@ -145,7 +145,7 @@ public struct BrewCaskInfo: Codable, Sendable {
 
     /// Rosetta caveats.
     /// Rosetta caveats 文本。
-    public let caveatsRosetta: String?
+    public let caveatsRosetta: BrewJSONValue?
 
     /// Dependencies definition.
     /// 依赖定义对象。
