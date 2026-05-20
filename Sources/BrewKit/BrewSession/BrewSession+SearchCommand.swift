@@ -28,10 +28,23 @@ extension BrewSession {
                 casks: try await search(query)
             )
         case nil:
-            return BrewSearchResult(
-                formulae: try await search(query),
-                casks: try await search(query)
-            )
+            async let formulaeTask: [BrewFormulaInfo] = search(query)
+            async let casksTask: [BrewCaskInfo] = search(query)
+
+            do {
+                let formulae = try await formulaeTask
+                let casks = try await casksTask
+                return BrewSearchResult(formulae: formulae, casks: casks)
+            } catch let error as BrewSessionError {
+                throw error
+            } catch {
+                throw .commandFailed(
+                    command: "brew search \(query)",
+                    exitCode: nil,
+                    stdout: "",
+                    stderr: error.localizedDescription
+                )
+            }
         }
     }
 
@@ -45,7 +58,9 @@ extension BrewSession {
     ///   - _: 用于 formula 重载分发的标记类型。
     /// - Returns: Matched formula info array.
     /// - 返回值: 命中的 formula 信息数组。
-    public func search(_ query: String) async throws(BrewSessionError) -> [BrewFormulaInfo] {
+    public func search(_ query: String) async throws(BrewSessionError)
+        -> [BrewFormulaInfo]
+    {
         let names = try await searchNames(query, kind: .formula)
         if names.isEmpty { return [] }
         let payload = try await fetchInfoPayload(names: names, kind: .formula)
@@ -62,7 +77,9 @@ extension BrewSession {
     ///   - _: 用于 cask 重载分发的标记类型。
     /// - Returns: Matched cask info array.
     /// - 返回值: 命中的 cask 信息数组。
-    public func search(_ query: String) async throws(BrewSessionError) -> [BrewCaskInfo] {
+    public func search(_ query: String) async throws(BrewSessionError)
+        -> [BrewCaskInfo]
+    {
         let names = try await searchNames(query, kind: .cask)
         if names.isEmpty { return [] }
         let payload = try await fetchInfoPayload(names: names, kind: .cask)
