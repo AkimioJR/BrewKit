@@ -47,7 +47,7 @@ struct ProcessCommandRunner: BrewCommandRunning {
     ///   - stream: 可选的逐行输出回调。
     /// - Returns: Full command result including stdout/stderr and exit code.
     /// - 返回值: 包含 stdout/stderr 和退出码的完整命令结果。
-    func run(
+    @concurrent nonisolated func run(
         executable: String,
         arguments: [String],
         environment: [String: String],
