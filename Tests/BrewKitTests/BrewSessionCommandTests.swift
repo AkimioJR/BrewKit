@@ -131,7 +131,7 @@ import Testing
         commandRunner: runner
     )
 
-    let result = try await session.search("docker")
+    let result: BrewSearchResult = try await session.search("docker")
     #expect(result.formulae.count == 1)
     #expect(result.formulae.first?.name == "docker")
     #expect(result.casks.count == 1)
@@ -182,11 +182,11 @@ import Testing
     #expect(caskOnly.casks.count == 1)
     #expect(caskOnly.formulae.isEmpty)
 
-    let formulaList: [BrewFormulaInfo] = try await session.search("wget", for: BrewFormulaInfo.self)
+    let formulaList: [BrewFormulaInfo] = try await session.search("wget")
     #expect(formulaList.count == 1)
     #expect(formulaList.first?.name == "wget")
 
-    let caskList: [BrewCaskInfo] = try await session.search("wget", for: BrewCaskInfo.self)
+    let caskList: [BrewCaskInfo] = try await session.search("wget")
     #expect(caskList.count == 1)
     #expect(caskList.first?.token == "wget-app")
 }
