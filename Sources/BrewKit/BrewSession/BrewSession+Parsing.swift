@@ -219,17 +219,7 @@ extension BrewSession {
     static func parseInfo(_ text: String, command: String) throws(BrewSessionError)
         -> BrewPackageInfo
     {
-        let payload = try extractJSONObjectString(from: text, command: command)
-
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-
-        let root: BrewInfoPayload
-        do {
-            root = try decoder.decode(BrewInfoPayload.self, from: Data(payload.utf8))
-        } catch {
-            throw BrewSessionError.jsonDecodeFailed(command: command, payload: payload)
-        }
+        let root = try parseInfoPayload(text, command: command)
 
         if let formula = root.formulae.first {
             return BrewPackageInfo(
@@ -263,7 +253,7 @@ extension BrewSession {
                 recommendedDependencies: formula.recommendedDependencies ?? [],
                 optionalDependencies: formula.optionalDependencies ?? [],
                 requirements: (formula.requirements ?? []).compactMap {
-                    if case let .string(value) = $0 { return value }
+                    if case .string(let value) = $0 { return value }
                     return nil
                 },
                 conflictsWith: formula.conflictsWith ?? [],
@@ -354,7 +344,53 @@ extension BrewSession {
             )
         }
 
-        throw BrewSessionError.jsonDecodeFailed(command: command, payload: payload)
+        throw BrewSessionError.jsonDecodeFailed(command: command, payload: text)
+    }
+
+    /// Parses full info payload from `brew info --json=v2 ...`.
+    /// 从 `brew info --json=v2 ...` 解析完整信息载荷。
+    /// - Parameters:
+    ///   - text: Raw command output text.
+    ///   - command: Diagnostic command string.
+    /// - 参数:
+    ///   - text: 原始命令输出文本。
+    ///   - command: 诊断用命令字符串。
+    /// - Returns: Parsed info payload containing both formulae and casks arrays.
+    /// - 返回值: 同时包含 formulae 与 casks 数组的解析后信息载荷。
+    static func parseInfoPayload(_ text: String, command: String) throws(BrewSessionError)
+        -> BrewInfoPayload
+    {
+        let payload = try extractJSONObjectString(from: text, command: command)
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+        do {
+            return try decoder.decode(BrewInfoPayload.self, from: Data(payload.utf8))
+        } catch {
+            throw BrewSessionError.jsonDecodeFailed(command: command, payload: payload)
+        }
+    }
+
+    /// Parses token-style search output into unique names.
+    /// 将 token 风格搜索输出解析为去重名称列表。
+    /// - Parameter text: Raw command output text.
+    /// - 参数 text: 原始命令输出文本。
+    /// - Returns: Deduplicated package name list.
+    /// - 返回值: 去重后的软件包名称列表。
+    static func parseSearchNames(_ text: String) -> [String] {
+        var seen = Set<String>()
+        var names: [String] = []
+
+        for token in text.split(whereSeparator: \.isWhitespace).map(String.init) {
+            let value = token.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !value.isEmpty else { continue }
+            guard !seen.contains(value) else { continue }
+            seen.insert(value)
+            names.append(value)
+        }
+
+        return names
     }
 
     /// Extracts JSON object or array payload from mixed output.
