@@ -102,3 +102,28 @@ private final class PathCommandCallStore: @unchecked Sendable {
     #expect(store.lastArguments == ["--prefix", "wget"])
     #expect(path == "/opt/homebrew/opt/wget")
 }
+
+@Test func repositoryPathUsesMappedArgumentsAndTrimsOutput() async throws {
+    let store = PathCommandCallStore()
+    let runner = MockCommandRunner { _, arguments, _, _, _ in
+        store.set(arguments: arguments)
+        return BrewCommandResult(
+            stdout: "/opt/homebrew/Library/Taps/homebrew/homebrew-core\n",
+            stderr: "",
+            exitCode: 0,
+            duration: 0.01
+        )
+    }
+
+    let session = try BrewSession(
+        brewPath: "/bin/sh",
+        environment: BrewSession.defaultEnvironment,
+        timeout: 30,
+        commandRunner: runner
+    )
+
+    let path = try await session.repositoryPath(forTap: "homebrew/core")
+
+    #expect(store.lastArguments == ["--repository", "homebrew/core"])
+    #expect(path == "/opt/homebrew/Library/Taps/homebrew/homebrew-core")
+}
