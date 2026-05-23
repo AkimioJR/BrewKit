@@ -1,0 +1,4 @@
+interface:
+  display_name: "BrewSession API Extension"
+  short_description: "Extend BrewSession command APIs safely"
+  default_prompt: "Use $brewsession-api-extension to add a typed BrewSession API for a Homebrew built-in command."
