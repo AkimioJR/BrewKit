@@ -27,7 +27,7 @@
 说明：获取 Cellar 根目录
 
 - [x] `brew --cellar`：输出 Cellar 根目录路径。
-- [ ] `brew --cellar <formula>`：输出指定 formula 在 Cellar 下的安装路径。
+- [x] `brew --cellar <formula>`：输出指定 formula 在 Cellar 下的安装路径。
 
 ## --env
 

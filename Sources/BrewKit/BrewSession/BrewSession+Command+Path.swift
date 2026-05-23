@@ -55,4 +55,15 @@ extension BrewSession {
         args.append(name)
         return args
     }
+
+    /// Returns the Cellar path where one formula is or would be installed.
+    /// 返回指定 formula 已安装或将安装到的 Cellar 路径。
+    /// - Parameter formula: Formula name to query.
+    /// - 参数 formula: 要查询的 formula 名称。
+    /// - Returns: Trimmed Cellar path output.
+    /// - 返回值: 去除首尾空白后的 Cellar 路径输出。
+    public func cellarPath(forFormula formula: String) async throws(BrewSessionError) -> String {
+        let result = try await runCommand(args: ["--cellar", formula])
+        return result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
