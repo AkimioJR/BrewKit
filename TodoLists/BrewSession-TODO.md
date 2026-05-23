@@ -14,7 +14,7 @@
 说明：获取 Homebrew 缓存路径
 
 - [x] `brew --cache`：输出 Homebrew 全局缓存目录路径。
-- [ ] `brew --cache <formula|cask>`：输出指定 formula/cask 的缓存文件路径。
+- [x] `brew --cache <formula|cask>`：输出指定 formula/cask 的缓存文件路径。
 
 ## --caskroom
 
