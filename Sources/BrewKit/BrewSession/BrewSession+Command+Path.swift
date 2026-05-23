@@ -66,4 +66,15 @@ extension BrewSession {
         let result = try await runCommand(args: ["--cellar", formula])
         return result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    /// Returns the installation prefix path for one formula.
+    /// 返回指定 formula 的安装前缀路径。
+    /// - Parameter formula: Formula name to query.
+    /// - 参数 formula: 要查询的 formula 名称。
+    /// - Returns: Trimmed prefix path output.
+    /// - 返回值: 去除首尾空白后的前缀路径输出。
+    public func prefixPath(forFormula formula: String) async throws(BrewSessionError) -> String {
+        let result = try await runCommand(args: ["--prefix", formula])
+        return result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }

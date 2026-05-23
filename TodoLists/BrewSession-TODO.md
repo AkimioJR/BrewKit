@@ -42,7 +42,7 @@
 说明：获取 Homebrew 前缀目录
 
 - [x] `brew --prefix`：输出 Homebrew 前缀路径。
-- [ ] `brew --prefix <formula>`：输出指定 formula 的安装前缀路径。
+- [x] `brew --prefix <formula>`：输出指定 formula 的安装前缀路径。
 
 ## --repository
 
