@@ -77,4 +77,15 @@ extension BrewSession {
         let result = try await runCommand(args: ["--prefix", formula])
         return result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
     }
+
+    /// Returns the local Git repository path for one tap.
+    /// 返回指定 tap 的本地 Git 仓库路径。
+    /// - Parameter tap: Tap name such as `homebrew/core`.
+    /// - 参数 tap: tap 名称，例如 `homebrew/core`。
+    /// - Returns: Trimmed repository path output.
+    /// - 返回值: 去除首尾空白后的仓库路径输出。
+    public func repositoryPath(forTap tap: String) async throws(BrewSessionError) -> String {
+        let result = try await runCommand(args: ["--repository", tap])
+        return result.stdout.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }

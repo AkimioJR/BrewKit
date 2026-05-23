@@ -49,7 +49,7 @@
 说明：获取仓库目录
 
 - [x] `brew --repository`：输出 Homebrew 主仓库路径。
-- [ ] `brew --repository <tap>`：输出指定 tap 的仓库路径。
+- [x] `brew --repository <tap>`：输出指定 tap 的仓库路径。
 
 ## --taps
 
