@@ -52,3 +52,28 @@ private final class PathCommandCallStore: @unchecked Sendable {
     #expect(formulaArgs == ["--cache", "--formula", "--force-bottle", "wget"])
     #expect(caskArgs == ["--cache", "--cask", "firefox"])
 }
+
+@Test func cellarPathUsesMappedArgumentsAndTrimsOutput() async throws {
+    let store = PathCommandCallStore()
+    let runner = MockCommandRunner { _, arguments, _, _, _ in
+        store.set(arguments: arguments)
+        return BrewCommandResult(
+            stdout: "/opt/homebrew/Cellar/wget\n",
+            stderr: "",
+            exitCode: 0,
+            duration: 0.01
+        )
+    }
+
+    let session = try BrewSession(
+        brewPath: "/bin/sh",
+        environment: BrewSession.defaultEnvironment,
+        timeout: 30,
+        commandRunner: runner
+    )
+
+    let path = try await session.cellarPath(forFormula: "wget")
+
+    #expect(store.lastArguments == ["--cellar", "wget"])
+    #expect(path == "/opt/homebrew/Cellar/wget")
+}
